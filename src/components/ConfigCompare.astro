@@ -1,0 +1,53 @@
+---
+/**
+ * 配置对比：当前 vs 安全建议。静态内容，detect.ts 命中后高亮对应项。
+ */
+const safeList = [
+  { id: 'timezone', text: '系统时区: Asia/Tokyo / America/New_York' },
+  { id: 'language', text: 'navigator.languages[0]: en-US' },
+  { id: 'fonts', text: '使用隐私模式或容器隔离' },
+  { id: 'webgl', text: '禁用硬件加速或使用国外 GPU' },
+  { id: 'osLocale', text: 'Windows 区域设为英文(美国), chcp 437' },
+  { id: 'claudeConfig', text: '清空 ~/.claude/ 配置目录' },
+  { id: 'emoji', text: 'Apple/Google 风格 Emoji 字体' },
+  { id: 'canvas', text: '使用隐私浏览器（Brave / Firefox Strict）' },
+  { id: 'proxy', text: '代理 hostname 用国外节点（非 .cn）' },
+];
+
+const dangerList = [
+  { id: 'timezone', text: 'Asia/Shanghai / Asia/Urumqi' },
+  { id: 'language', text: 'zh-CN / zh-Hans / zh' },
+  { id: 'fonts', text: '已安装微软雅黑 / PingFang SC / 思源黑体' },
+  { id: 'webgl', text: '摩尔线程 / 兆芯 / 芯动等国产 GPU' },
+  { id: 'osLocale', text: '代码页 936 (GBK)' },
+  { id: 'claudeConfig', text: '~/.claude/ 目录存在且非空' },
+  { id: 'emoji', text: 'Microsoft / Windows 自带 Emoji' },
+  { id: 'canvas', text: '默认 Chrome / Edge 渲染（指纹稳定）' },
+  { id: 'proxy', text: 'hostname 含 .cn / 国内云厂商' },
+];
+---
+
+<div class="evidence-card card">
+  <h2>配置对比</h2>
+  <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.8rem;">
+    左栏是 Claude Code 实际关注的「中国环境」特征，右栏是降低风险的建议配置。
+  </p>
+  <div class="compare-grid">
+    <div class="compare-col danger" id="compare-danger">
+      <h4>危险配置</h4>
+      <ul>
+        {dangerList.map((item) => (
+          <li data-signal={item.id}>{item.text}</li>
+        ))}
+      </ul>
+    </div>
+    <div class="compare-col safe" id="compare-safe">
+      <h4>安全配置</h4>
+      <ul>
+        {safeList.map((item) => (
+          <li data-signal={item.id}>{item.text}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</div>

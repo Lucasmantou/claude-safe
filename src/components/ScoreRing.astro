@@ -1,0 +1,25 @@
+---
+/**
+ * 分数环。SVG 圆 + 中心数字。detect.ts 控制 stroke-dashoffset 和 data-band。
+ */
+const R = 90;
+const C = 2 * Math.PI * R;
+---
+
+<div class="score-ring-wrap" id="score-gauge" data-scanning="true">
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <circle class="track" cx="100" cy="100" r={R} />
+    <circle
+      class="progress"
+      id="score-ring"
+      cx="100"
+      cy="100"
+      r={R}
+      style={`stroke-dasharray: ${C.toFixed(2)}px; stroke-dashoffset: ${C.toFixed(2)}px;`}
+    />
+  </svg>
+  <div class="score-value">
+    <span class="num" id="score-value">0</span>
+    <span class="denom">/ 100</span>
+  </div>
+</div>

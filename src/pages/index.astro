@@ -1,0 +1,120 @@
+---
+import Base from '../layouts/Base.astro';
+import RadarChart from '../components/RadarChart.astro';
+import ScoreRing from '../components/ScoreRing.astro';
+import EvidenceList from '../components/EvidenceList.astro';
+import ConfigCompare from '../components/ConfigCompare.astro';
+import Footer from '../components/Footer.astro';
+import { SIGNAL_META } from '../core/signals';
+
+// 9 个信号的内联 SVG 图标
+const ICONS: Record<string, string> = {
+  timezone:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  language:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18"/></svg>',
+  fonts:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg>',
+  webgl:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>',
+  osLocale:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18v14H3z M7 4v14M3 8h4"/></svg>',
+  claudeConfig:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>',
+  emoji:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>',
+  canvas:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z M7 12c1.5 2 3 3 5 3s3.5-1 5-3"/></svg>',
+  proxy:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M5.6 18.4L18.4 5.6"/></svg>',
+};
+
+const scopeLabel = (scopes: string[]) => scopes.join(' · ');
+
+const apiCmd = 'curl https://claude-safe.vercel.app/api/check';
+---
+
+<Base>
+  <main>
+    <header class="hero">
+      <div class="badge">
+        <span class="dot"></span>
+        9 项信号 · 本地检测 · 零上传
+      </div>
+      <h1>你的 Claude<br /><span class="accent">容易被封号吗？</span></h1>
+      <p>
+        当 <code style="font-family: var(--mono); background: var(--accent-soft); padding: 0.1rem 0.4rem; border-radius: 4px; color: var(--accent-dim); font-size: 0.9em;">ANTHROPIC_BASE_URL</code>
+        指向非官方中转时，Claude Code 会读取系统时区、代理 hostname、字体等环境信号。
+        本工具扫描 9 项指纹，估算你被标记为「中国用户」的风险分。
+      </p>
+    </header>
+
+    <section class="api-section">
+      <h3>命令行检测（更全面）</h3>
+      <div class="code-block">
+        <button class="copy" id="api-copy" data-copy={apiCmd}>
+          <span id="api-copy-label">复制</span>
+        </button>
+        <div>$ pnpm cli</div>
+        <div style="opacity: 0.6;"># 或 HTTP 端点（部署后可用）</div>
+        <div>$ {apiCmd}</div>
+      </div>
+    </section>
+
+    <section class="dashboard">
+      <div class="card score-card" id="score-card">
+        <div class="scan-row">
+          <button class="scan-btn" id="retest">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 11-3-6.7L21 8" /><path d="M21 3v5h-5" />
+            </svg>
+            <span id="retest-label">开始扫描</span>
+          </button>
+        </div>
+        <ScoreRing />
+        <div class="verdict-banner" id="verdict-banner" hidden>
+          <div class="verdict-icon" id="verdict-icon"></div>
+          <div class="verdict-body">
+            <div class="verdict-title" id="risk-badge">等待扫描</div>
+            <div class="verdict-desc" id="risk-desc"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card radar-card">
+        <h3>九维指纹雷达</h3>
+        <RadarChart />
+      </div>
+    </section>
+
+    <section class="card signals-card">
+      <h2>信号详情</h2>
+      {SIGNAL_META.map((meta) => (
+        <div class="signal-row is-pending" data-signal={meta.id}>
+          <span class="icon" set:html={ICONS[meta.id]} />
+          <div class="meta">
+            <span class="name">
+              {meta.name}
+              {meta.claudeUsed && <span class="claude-tag">Claude</span>}
+            </span>
+            <span class="scope">{scopeLabel(meta.scopes)}</span>
+            <span class="explanation">{meta.explanation}</span>
+          </div>
+          <span class="value" data-field="value"></span>
+          <span class="contribution" data-field="contribution"></span>
+        </div>
+      ))}
+    </section>
+
+    <section class="bottom-grid">
+      <EvidenceList />
+      <ConfigCompare />
+    </section>
+
+    <Footer />
+  </main>
+
+  <script>
+    import '../scripts/detect.ts';
+  </script>
+</Base>

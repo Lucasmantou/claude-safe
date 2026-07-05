@@ -1,0 +1,28 @@
+{
+  "name": "claude-safe-checker",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "检测浏览器/系统环境是否会被 Claude Code 标记为中国用户",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "cli": "tsup && node dist/index.js",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^11.0.2",
+    "astro": "^7.0.5",
+    "systeminformation": "^5.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "tsup": "^8.3.0",
+    "typescript": "^6.0.3"
+  },
+  "bin": {
+    "claude-safe": "./dist/index.js"
+  }
+}

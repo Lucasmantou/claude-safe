@@ -1,0 +1,72 @@
+---
+/**
+ * 9 边形雷达图。SVG 静态结构（网格 + 轴 + 标签），detect.ts 动态更新 polygon points。
+ */
+import { SIGNAL_META } from '../core/signals';
+
+const N = SIGNAL_META.length; // 9
+const CX = 130;
+const CY = 130;
+const R_MAX = 90; // 100% 半径
+const R_LABEL = 108; // 标签半径
+const RING_LEVELS = [0.2, 0.4, 0.6, 0.8, 1.0];
+
+function vertex(i: number, radius: number): [number, number] {
+  const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+  return [CX + radius * Math.cos(angle), CY + radius * Math.sin(angle)];
+}
+
+function polyPath(radius: number): string {
+  return Array.from({ length: N }, (_, i) => vertex(i, radius))
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(' ') + ' Z';
+}
+
+const shortNames: Record<string, string> = {
+  timezone: '时区',
+  language: '语言',
+  fonts: '字体',
+  webgl: 'GPU',
+  osLocale: 'OS区域',
+  claudeConfig: '配置',
+  emoji: 'Emoji',
+  canvas: 'Canvas',
+  proxy: '代理',
+};
+---
+
+<div class="radar-wrap" id="radar">
+  <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+    {/* 网格 */}
+    {RING_LEVELS.map((level) => (
+      <polygon class="grid" points={Array.from({ length: N }, (_, i) => vertex(i, R_MAX * level).join(',')).join(' ')} />
+    ))}
+
+    {/* 轴 */}
+    {Array.from({ length: N }, (_, i) => {
+      const [x, y] = vertex(i, R_MAX);
+      return <line class="axis" x1={CX} y1={CY} x2={x} y2={y} />;
+    })}
+
+    {/* 数据多边形（detect.ts 更新 points） */}
+    <polygon class="shape" id="radar-shape" points={Array.from({ length: N }, () => `${CX},${CY}`).join(' ')} />
+
+    {/* 顶点圆点 */}
+    <g id="radar-vertices">
+      {Array.from({ length: N }, (_, i) => {
+        const [x, y] = vertex(i, 0);
+        return <circle class="vertex" cx={x} cy={y} r="0" data-i={i} />;
+      })}
+    </g>
+
+    {/* 标签 */}
+    {SIGNAL_META.map((meta, i) => {
+      const [x, y] = vertex(i, R_LABEL);
+      return (
+        <text class="label" x={x} y={y} dominant-baseline="middle">
+          {shortNames[meta.id] || meta.name}
+        </text>
+      );
+    })}
+  </svg>
+</div>

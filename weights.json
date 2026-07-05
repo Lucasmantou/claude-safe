@@ -1,0 +1,11 @@
+{
+  "timezone": 24,
+  "language": 20,
+  "fonts": 14,
+  "webgl": 10,
+  "osLocale": 8,
+  "claudeConfig": 6,
+  "emoji": 6,
+  "canvas": 6,
+  "proxy": 6
+}
